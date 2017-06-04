@@ -1,0 +1,32 @@
+#shitToWrite {
+	width: 800px;
+	margin: auto;
+}
+
+.leftRP {
+	max-width: 75%;
+	min-width: 40%;
+	background-color: #E9E8F1;
+	font-size: 14px;
+	font-color: #25201C;
+	font-family: Verdana, sans-serif;
+	padding: 10px;
+	margin: 0px;
+	margin-bottom: 4px;
+	border-radius: 10px;
+	float: left;
+}
+	
+.rightRP {
+	max-width: 75%;
+	min-width: 40%;
+	background-color: #DCF2D4;
+	font-size: 14px;
+	font-color: #25201C;
+	font-family: Verdana, sans-serif;
+	padding: 10px;
+	margin: 0px;
+	margin-bottom: 4px;
+	border-radius: 10px;
+	float: right;
+}

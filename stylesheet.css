@@ -1,8 +1,43 @@
+/* The whole rp chat area. */
 #shitToWrite {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-webkit-user=select: none;
+	-moz-user-select: -moz-none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 	width: 800px;
 	margin: auto;
+	cursor: move;
 }
 
+/* little notification that a certain chat bubble has been shortened from it's original text
+	to fit in an area. */
+.shortenedTextTag {
+	margin: auto; 
+	background-color: #222222;
+	color: #ffffff;
+	border-radius: 5px;
+	font-size: 14px;
+	position:absolute;
+
+}
+
+/* delete if I'm not using the dividers */
+.divider {
+	margin-top: 6px;
+	margin-bottom: 6px;
+	margin-left: 5%;
+	margin-right: 5%;
+	float: right;
+	width: 90%;
+	height: 5px;
+	border-radius: 100px;
+	background-color: #6c00d9;
+}
+
+/* Clasifies one of the two types of rp chat bubbles. */
 .leftRP {
 	max-width: 75%;
 	min-width: 40%;
@@ -15,8 +50,10 @@
 	margin-bottom: 4px;
 	border-radius: 10px;
 	float: left;
+	clear: both;
 }
 	
+/* similar to above, but it flots to the right and is colored differently. */
 .rightRP {
 	max-width: 75%;
 	min-width: 40%;
@@ -29,4 +66,27 @@
 	margin-bottom: 4px;
 	border-radius: 10px;
 	float: right;
+	clear: both;
+}
+
+/* The panel that has save, cancel, and other options for editing the post. */
+.editControl {
+	margin: 0px;
+	float: left;
+	clear: both;
+}
+/* If the rp is following a right rp post, make it float right. */
+p.rightRP + .editControl{
+	float: right;
+}
+
+/* Used to clarify to the user what the currently held rp post is. */
+#heldRpPost {
+	background-color: #cc99ff;
+}
+
+/*Used to clarify to the user what rp post is being edited by them. */
+#editingRpPost  {
+	background-color: #fff2f5;
+	border: 5px solid black;
 }

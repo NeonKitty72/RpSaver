@@ -23,6 +23,8 @@
 	<script>
 		var css;	//used in saving the file 
 	
+	
+		//----Automatic RP Generation-----------------------------------------------------------------------------------------
 		function makeItNoice(){			
 			var allText = document.getElementById("rp").value;		//Text that is in the user input textArea
 			var toOutput = "";										//Wat to add to the current output-chat box
@@ -42,6 +44,11 @@
 					var text = 	document.createElement("p");
 					if (left) 	text.setAttribute("class", "leftRP");
 					else 		text.setAttribute("class", "rightRP");
+					text.setAttribute("style", "height:auto;");
+					text.setAttribute("ondblclick","editElem(this);");
+					text.setAttribute("ondragstart","moveElem(this);");
+					text.setAttribute("draggable","true");
+					
 					
 					var t = document.createTextNode(toOutput);
 					text.appendChild(t);					
@@ -57,15 +64,19 @@
 			var text = 	document.createElement("p");
 			if (left) 	text.setAttribute("class", "leftRP");
 			else 		text.setAttribute("class", "rightRP");
+			text.setAttribute("style", "height:auto;");
+			text.setAttribute("ondblclick","editElem(this);");
+			text.setAttribute("ondragstart","moveElem(this);");
+			text.setAttribute("draggable","true");
 			var t = document.createTextNode(toOutput);
 			text.appendChild(t);					
 			document.getElementById("shitToWrite").appendChild(text);
 			
 			activateSaveButton();
 	
-		}	
+		}
 		
-		
+		//-----Saving the RP------------------------------------------------------------------------------------
 		/*
 			Make Whatever is stored in shitToWrite available to be saved. Get the css from the 
 			webpage stored in NeonKitty's GitHub.io page. If that file can't be accessed in 3 seconds, 
@@ -90,7 +101,6 @@
 		}
 		
 		/*
-			Set up the html of the file to save and prepare the save button, actually activating it.
 			Set up the html of the file to save and prepare the save button, actually activating it.
 		*/
 		function finishActivateSaveButton(headText){
@@ -125,14 +135,354 @@
 				}
 			}
 		}
+		//------------------------------------------------------------------------------------------------
+		//- GLOBAL VARS ---------------------------------------------------------------------------
+	var mouseDown = false;				//Whether the mouse is held down on an rp post and moving it
+	var mouseX, mouseY;					//mouse's x and y position: always tracked.
+	var elemToMoveWithMouse = null;		//the elem that will follow the mouse's movements while moving elems
+	var elemX, elemY;					//The element to move with mouse's x and y position away from the cursor
+	var heldElem = null;				//the elem that we are currently moving
+	var chatBubblePadding = 20;			//the amount of padding on each chat bubble: Helps keep height same while swapping elems
+	var modifiedChatPosts = [];			//parallel arrays of the chat posts with shortened text, and the text that they need when 
+	var modifiedChatPostsText = [];		// they have been reset.
 	
+	
+	//-----------------------------------------------------------------------------------------
+	//set the functions to perform when the mouse moves and when the mouse is unclicked.
+	function initMoving(){
+		//---- INNER ONMOUSEMOVE FUNCTION ----
+		//called every time the mouse moves. Only does things if the mouse is pressed down.
+		document.onmousemove = function(event){
+			//update the position of the mouse
+			mouseX = document.all ? window.event.clientX : event.clientX;
+			mouseY = document.all ? window.event.clientY : event.clientY;
+			if (mouseDown){					
+				//update position of the object following the mouse
+				if (elemToMoveWithMouse != null){
+					elemToMoveWithMouse.style.left = (mouseX - elemX) + "px";
+					elemToMoveWithMouse.style.top = (mouseY - elemY) + "px";
+				}
+			
+				//check if we need to swap with the above element	
+				if (heldElem.previousElementSibling != null && mouseY <= ((heldElem.previousElementSibling.offsetTop + heldElem.offsetTop) / 2)){
+					swapElems(heldElem, heldElem.previousElementSibling);
+					updateHeldElem("prev");
+				}
+				//check if we need to swap with the below element
+				if (heldElem.nextElementSibling != null && mouseY  >= ((heldElem.nextElementSibling.offsetTop + (heldElem.offsetTop + heldElem.clientHeight)) / 2)){
+					swapElems(heldElem, heldElem.nextElementSibling);
+					updateHeldElem("next");
+				}
+			} //end ifMouseDown
+		}; 
+		//--------- END INNER FUNCTION -----
+		
+		//whenever the user releases the mouse button, drop the element where it is.
+		document.onmouseup = dropElem;
+	}	
+	
+	//-----------------------------------------------------------------------------------------
+	//updates the class of the held elem and changes it to be either the 
+	// next or the previous element in the chatlist, depending on the string
+	// passed into it.
+	function updateHeldElem(directionToMove) {
+		//reset the id selector
+		heldElem.removeAttribute("id");
+		
+		//set the heldelem to either the next or the previous element
+		if (directionToMove == "prev") heldElem = heldElem.previousElementSibling;
+		if (directionToMove == "next") heldElem = heldElem.nextElementSibling;
+		
+		//set the id attribute of the new heldElem
+		heldElem.setAttribute("id", "heldRpPost");
+	
+	}
+	
+	//-----------------------------------------------------------------------------------------
+	//called when a user clicks on an rp chat bubble. 
+	// Sets the chat bubble as the one currently set to move.
+	function moveElem(elem){
+		//make sure they're not editing text
+		if (editingText) {alert("you can't move elements while editing text."); return;}
+				
+		mouseDown = true;
+		heldElem = elem;
+		heldElem.setAttribute("id", "heldRpPost");
+		startMove(elem);		//create a clone element that follows the mouse movements
+		modifiedChatPosts.push(heldElem);
+		modifiedChatPostsText.push(heldElem.innerHTML);		
+	}
+	
+	//-----------------------------------------------------------------------------------------
+	//called whenever the user releases the mouse button.
+	//keep the elem where it is and call it a day.
+	function dropElem(){
+		//make sure they're moving something
+		if (!mouseDown) return; 
+		mouseDown = false;
+		
+		//remove the mouse-bound element
+		elemToMoveWithMouse.parentNode.removeChild(elemToMoveWithMouse);
+		elemToMoveWithMouse = null;
+		
+		//update which element is the held elem, since it was originally set as the 0th element and has prob been moved.
+		heldElem.removeAttribute("id");
+		modifiedChatPosts[0] = heldElem;
+		//reset any changed text to be the normal text.
+		while (modifiedChatPosts.length > 0){
+			resetText();
+		}
+	}
+
+	//-----------------------------------------------------------------------------------------
+	//replaces the shortened text of a shortened rp post with the normal, long text.
+	function resetText(){
+		var elem = modifiedChatPosts.pop();
+		var elemText = modifiedChatPostsText.pop();
+		
+		elem.innerHTML = elemText;
+		elem.setAttribute("style", "height:auto;");
+	}
+	
+	
+	//-----------------------------------------------------------------------------------------
+	//used to swap the position of two chat bubbles.
+	function swapElems(elem1, elem2){
+		var tempElemHTML = elem1.innerHTML;
+		var heightNum;
+		
+		//Set the elements to keep their current sizes. Done so that there aren't any 
+		// jumps around while doing the swaps.
+		heightNum = "height:" + (elem1.clientHeight - chatBubblePadding) + "px;";
+		elem1.setAttribute("style",heightNum);
+		heightNum = "height:" + (elem2.clientHeight - chatBubblePadding) + "px;";
+		elem2.setAttribute("style",heightNum);
+		
+		//swap the element text
+		elem1.innerHTML = elem2.innerHTML;
+		elem2.innerHTML = tempElemHTML;
+
+		//save the text and what element was changed
+		modifiedChatPosts.push(elem1);
+		modifiedChatPostsText.push(elem1.innerHTML);
+		makeTextFit(elem1);
+		makeTextFit(elem2);
+	}
+	
+	//-----------------------------------------------------------------------------------------
+	function makeTextFit(elem){
+		
+		var changesMade = false;
+		while (elem.scrollHeight > elem.clientHeight){
+			changesMade = true;
+			elem.innerHTML = elem.innerHTML.substring(0, elem.innerHTML.length/2) + "...";
+		}
+		
+		if (changesMade == true){
+			var shortenedTag = document.createElement("p");
+			var text = document.createTextNode("Shortened from Original!");
+			shortenedTag.appendChild(text);
+			shortenedTag.setAttribute("class", "shortenedTextTag");
+		
+			elem.appendChild(shortenedTag);
+		}
+		
+	
+	
+	}
+	
+	//-----------------------------------------------------------------------------------------
+	function startMove(element){
+		//store the info of the object that needs to be moved.
+		//elemToMoveWithMouse = element;
+		elemToMoveWithMouse = document.createElement("p");
+		var text = document.createTextNode(element.innerHTML.substring(0, 40) + "...");
+		elemToMoveWithMouse.appendChild(text);
+		
+		//set the basic attributes
+		elemToMoveWithMouse.setAttribute("class", element.getAttribute("class"));
+		
+		//set the style and the positioning: use 0 for size, since we need to know how big 
+		//	the elem will be before we can accurately place it
+		var elemStyle = "position:fixed; left:0px; top:0px; opacity:0.7; min-width:10%;";
+		elemToMoveWithMouse.setAttribute("style", elemStyle);
+		document.body.appendChild(elemToMoveWithMouse);
+		
+		//update the positioning of the object, making it float a bit up and to the left of the mouse.
+		elemX = elemToMoveWithMouse.scrollWidth / 1.2; //mouseX - element.offsetLeft;
+		elemY = elemToMoveWithMouse.scrollHeight / 1.2; //mouseY - element.offsetTop;
+		elemToMoveWithMouse.style.left = (mouseX - elemX) + "px";
+		elemToMoveWithMouse.style.top = (mouseY - elemY) + "px";
+	}
+	
+	//----Splitting Elements-------------------------------------------------------------------------------------
+	var oldText; 		//the text that was in an rp chat bubble before the user started editing it
+	var editingText = false;
+	
+	//start editing an element: Set the text as editable and create a button to save changes and a button 
+	// to delete changes.
+	function editElem(element){
+		//make sure we're not already editing the element
+		if (editingText) {
+			alert("you're already editing text!");
+			return;
+		}
+		
+		//set up the element to be editable and look editable
+		editingText = true;
+		oldText = element.innerText;
+		element.setAttribute("id", "editingRpPost");		//make it stand out
+		element.setAttribute("contenteditable", "true");	//make the content editable
+		element.setAttribute("draggable", "false"); 		//make sure they don't accidentally drag the thing
+		
+		//create a panel with buttons to deal with editing text.
+		var editControls = setupEditControls();
+		
+		element.insertAdjacentElement("afterend", editControls);
+		
+	}
+	
+	function setupEditControls(){
+		var editControls = document.createElement("div");
+		editControls.setAttribute("class", "editControl");
+		
+		//create the button to save the changes to the text
+		var savebtn = document.createElement("button");
+		savebtn.appendChild(document.createTextNode("Save Changes"));
+		savebtn.setAttribute("type","button");
+		savebtn.setAttribute("onmousedown", "finishEdit(this.parentNode.previousElementSibling);");
+		editControls.appendChild(savebtn);
+		
+		//create the button to remove the changes to the text
+		var cancelbtn = document.createElement("button");
+		cancelbtn.appendChild(document.createTextNode("Cancel Changes"));
+		cancelbtn.setAttribute("type","button");
+		cancelbtn.setAttribute("onmousedown", "cancelEdit(this.parentNode.previousElementSibling);");
+		editControls.appendChild(cancelbtn);
+		
+		//create a checkbox for whether to reverse what side all future posts are on after this on/
+		// if splitting the post into two posts.
+		editControls.innerHTML += "<br />";
+		var reverseCheckBox = document.createElement("input");
+		reverseCheckBox.setAttribute("id", "reverseCheckBox");
+		reverseCheckBox.setAttribute("type", "checkbox");
+		reverseCheckBox.checked = true;
+		var reverseText = document.createElement("span")
+		reverseText.appendChild(reverseCheckBox);
+		reverseText.appendChild(document.createTextNode("Reverse future rp posts on split."));
+		editControls.appendChild(reverseText);
+		
+		return editControls;
+	}
+	
+	//save the changes that were made to the post, and then check for splits and clean up tags.
+	function finishEdit(element){
+		checkForSplit(element);
+		element.innerHTML = element.innerText;
+		cleanUpFromEditing(element);
+	}
+	
+	//cancel the editing. Just reset text, and clean up the tags for moving.
+	function cancelEdit(element){
+		element.innerHTML = oldText;
+		cleanUpFromEditing(element);
+	}
+	
+	//reset the inner tags so that the passed in rp post can be used like normal
+	function cleanUpFromEditing(element){
+		element.setAttribute("contenteditable", "false");	//make the content uneditable again
+		element.setAttribute("draggable", "true"); 			//let them drag it again
+		if (element.nextElementSibling.getAttribute("class") == "editControl") 
+			element.parentNode.removeChild(element.nextElementSibling);
+		if (element.getAttribute("id") == "editingRpPost")
+			element.removeAttribute("id");
+		editingText=false;
+	}
+	
+	//check for the string {split} in any casing. If it finds it, then add an rp post bubble above
+	// with all the text UP TO the split, and make the current bubble have all the text AFTER the split.
+	function checkForSplit(elemToSplit){
+		var splitPos = elemToSplit.innerHTML.search(/{split}/i);
+		
+		//if the string was found to be added to the post, then split the post there.
+		if (splitPos != -1){
+			//save the value of the checkBox before it's deleted
+			var reverseCheckBoxValue = document.getElementById("reverseCheckBox").checked;
+			
+			//Make new elem's text out of the text before split and insert it.
+			var newElem = elemToSplit.cloneNode(true);
+			newElem.innerHTML = elemToSplit.innerText.substring(0, splitPos);
+			elemToSplit.insertAdjacentElement("beforebegin", newElem);
+			cleanUpFromEditing(newElem);
+			
+			//change the text of the html element to everything from after split to the end of the text.
+			elemToSplit.innerText = elemToSplit.innerText.substring(splitPos + 7, elemToSplit.innerText.length);
+			
+			//change the ordering of all the future posts so it makes more sense.
+			if (reverseCheckBoxValue == true) reverseAllFuturePosts(elemToSplit);
+		}
+	}
+	
+	//recursive function to go through and swap the classes of all the future elements.
+	function reverseAllFuturePosts(element){
+		if (element == null) return;
+			
+		if (element.getAttribute("class") == "leftRP")
+			element.setAttribute("class","rightRP");
+		else if (element.getAttribute("class") == "rightRP")
+			element.setAttribute("class","leftRP");
+			
+		reverseAllFuturePosts(element.nextElementSibling);
+	}
+	
+	
+	//-----------------------------------------------------------------------------------------
+	///OLD DIVIDER SHIT
+	
+	//-----------------------------------------------------------------------------------------
+	//creates a basic element that is used to divide between elements.
+	function createDividerElem(){
+		var item = document.createElement("p");
+		item.setAttribute("class", "divider");
+		return item;
+	
+	}
+	
+	//-----------------------------------------------------------------------------------------
+	//swap ID is 1 for moving up, 2 for moving down.
+	function swapDividers(swapID){
+		if (swapID == 1){
+			//make sure we're not at the last element and that there is a divider below
+			if (heldElem.nextElementSibling != null)
+				heldElem.parentNode.removeChild(heldElem.nextElementSibling);
+			//make sure we're not at the top and don't need a divider above
+			if (heldElem.previousElementSibling.previousElementSibling != null) {
+				var divTop = createDividerElem();
+				heldElem.previousElementSibling.previousElementSibling.insertAdjacentElement("beforebegin", divTop);
+			}
+		}
+		
+		
+		//if moving down, remove the top child
+		if (swapID == 2){
+			//make sure we're not at the first element and that there is a divider above
+			if (heldElem.previousElementSibling != null)
+				heldElem.parentNode.removeChild(heldElem.previousElementSibling);
+			//make sure we're not at the bottom and don't need a divider below
+			if (heldElem.nextElementSibling.nextElementSibling.nextElementSibling != null) {
+				var divBot = createDividerElem();
+				heldElem.nextElementSibling.nextElementSibling.insertAdjacentElement("afterend", divBot);
+			}
+		}
+	}
+	//-----------------------------------------------------------------------------------------
 	</script>	
 </head>
 
 	<!--***********************************************************************************************************************************
 		HTML CODE
 	************************************************************************************************************************************-->
-<body>
+<body onload="initMoving();">
 	<!-- Where user inputs text -->
 	<textarea rows="10" cols="50" name="rp" id="rp">[TheFiendHerself]: lol oh no look I'm a shitty mockup! *eats u* nomph nomph cronch cronch on the kitty who is pretty and skitty and this is a long paragraph that I'm just trying to make really long so I can have multiple liiiiines Tails is cute and I need oone more line there we go
 [Other Person]: lol oh no look I'm a shitty mockup! *eats u* nomph

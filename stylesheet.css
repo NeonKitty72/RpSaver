@@ -1,15 +1,23 @@
+/*Make the body more centered. */
+body {
+	width: 85%;
+	margin: auto;
+	margin-top: 15px;
+	
+}
+
+/*The box that they put the rp text into. */
+#userInputRp {
+	float: left;
+	margin: auto;
+	width: 30%;
+}
+
 /* The whole rp chat area. */
 #shitToWrite {
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-webkit-user=select: none;
-	-moz-user-select: -moz-none;
-	-ms-user-select: none;
-	-o-user-select: none;
-	user-select: none;
-	width: 800px;
+	max-width: 800px;
+	min-width: 400px;
 	margin: auto;
-	cursor: move;
 }
 
 /* little notification that a certain chat bubble has been shortened from it's original text

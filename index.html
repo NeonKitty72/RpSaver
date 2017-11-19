@@ -84,7 +84,6 @@
 				//pick up text until we hit crlf
 				if (allText.charAt(i) != "\r" && allText.charAt(i) != "\n"){
 					toOutput += allText.charAt(i)
-					if (isDebug) console.log("current character: " + allText.charAt(i));
 				}
 			} //end of for loop
 			
@@ -102,11 +101,31 @@
 			var leftName = "";
 			var rightName = "";
 			
-			leftName = allText.substring(0, allText.indexOf(","));
-			for (var i = 0; i < allText.length - 1; i++){
-				if (allText.charAt(i) == "\n" && allText.charAt(i+1) == "\n"){
-					rightName = (allText.substring(i+2, allText.indexOf(",", i)));
-					if (rightName != leftName)	break;	//make sure we didn't just grab the same name
+			//guess left name, then see if we're right.
+			var i = 0;
+			for (; i < allText.length - 1; i++){
+					leftName = allText.substring(0, allText.indexOf(","));
+					if (allText.charAt(i + leftName.length + 2) == "["		//check if there's a [ after their name, plus space for , and the space
+					  && allText.charAt(i + leftName.length + 17) == "]") {
+					  i = i + 19; //skip past this name
+						break;
+					}
+			} 				
+				
+			//guess right name, then see if it's good
+			// We continue from where the last for loop left off to
+			// be more efficient.
+			for (; i < allText.length - 1; i++){
+				rightName = (allText.substring(i, allText.indexOf(",", i)));
+				if (rightName == leftName){
+					i = i + 19;
+				}
+				if (rightName != leftName
+				  && rightName.indexOf("\n") == -1
+				  && allText.charAt(i + rightName.length == ",")
+				  && allText.charAt(i + rightName.length + 2) == "["		//same as before, but with right name
+				  && allText.charAt(i + rightName.length + 17) == "]"){
+					break;	//make sure we didn't just grab the same name
 				}
 			}
 			return [leftName, rightName];

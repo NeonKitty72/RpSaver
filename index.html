@@ -5,13 +5,13 @@
 	
 	TODO: 
 	* Check that rightName isn't null for Telegram
-	* Way to organize RP's, and retrive them all easily from within the app.
+	* Way to organize RP's, and retrieve them all easily from within the app.
 		IE, be able to have a 'folder' for 'Kim Stuff' and have a listing 
 		of all the rp's in that section.
 	* Add in discord tracking
 	* Actual good formatting? It works 4 now tho
 	
-	Idea: Make structure of first specieal character, make a 
+	Idea: Make structure of first special character, make a 
 		struct that tells where it is and what fun to do?
 		Then push that and use the beginning of special char
 		to put it all into the Done Output
@@ -23,7 +23,7 @@
 	<title>RP Saver</title>
 	<meta charset="UTF-8">
 	<link rel="stylesheet" type="text/css" href="stylesheet.css">
-	
+	<script src="ckeditor/ckeditor.js"></script>
 	<!--***********************************************************************************************************************************
 		JAVASCRIPT CODE
 	************************************************************************************************************************************-->
@@ -33,15 +33,21 @@
 	
 		//----Automatic RP Generation-----------------------------------------------------------------------------------------
 		function makeItNoice(){			
-			var allText = document.getElementById("rp").value;		//Text that is in the user input textArea
-			document.getElementById("shitToWrite").innerHTML = "";	//reset current generated rp
+			var allText = CKEDITOR.instances.rp.getData();		//Text that is in the user input textArea\
 			
+			if (isDebug) console.log(allText);
+			document.getElementById("shitToWrite").innerHTML = "";	//reset current generated rp
+			//var doc = new DOMParser().parseFromString(allText, "text/html");
+			//allText = doc.documentElement.textContent;
+			//if (isDebug) console.log(allText);
 			//get what chat client the user chose
 			var messenger = document.getElementsByName("messenger");
 			if (messenger[0].checked){			//user chose telegram
 				telegramDecipher(allText);
 			} else if (messenger[1].checked) { 	//user chose other
 				otherDecipher(allText);
+			} else if (isDebug && messenger[2].checked) {
+				dumpDecipher(allText);
 			}
 			
 			activateSaveButton();		//make the save button available
@@ -59,21 +65,31 @@
 			var left = 1;										//whether to align text left or right
 			
 			for (var i = 0; i < allText.length; i++){
+			
+				//Skip over any html tags.
+				var parseHTMLResult = parseHTMLElements(allText, i);
+				if (parseHTMLResult != "NONE" && parseHTMLResult != "/p"){
+					i = i + parseHTMLResult.length + 1; //1 accounts for end >
+					if (isDebug) console.log("skipped over " + parseHTMLResult);
+					continue;
+					
+				}
+			
 				//make sure it's not the header line
 				if (allText.charAt(i) == leftName.charAt(0)
-						&& allText.charAt(i + leftName.length + 2) == "["		//check if there's a [ after their name, plus space for , and the space
+						&& allText.charAt(i + leftName.length + 2) == "["		//check for [ after name, plus ,<space>
 						&& allText.charAt(i + leftName.length + 17) == "]"){	// and the ending ]
 					left = true;
-					i = i + leftName.length + 19;								//note: 19 is total 'header' text after user's name
+					i = i + leftName.length + 24;								//24 is total 'header' text after user's name
 				} else if (allText.charAt(i) == rightName.charAt(0)
 						&& allText.charAt(i + rightName.length + 2) == "["		//same as before, but with right name
 						&& allText.charAt(i + rightName.length + 17) == "]"){
 					left = false;
-					i = i + rightName.length + 19;
+					i = i + rightName.length + 24;
 				}
 				
 				//output text, reset vars for next output
-				if (allText.charAt(i) == "\n" && allText.charAt(i - 1) != "\n"){					
+				if (parseHTMLElements(allText, i) == "/p" && i + 4 != allText.length){	//account for last /p			
 					toOutput = (left ? leftName : rightName)+ ": " + toOutput;	//add in the users name
 					createParagraphElement(toOutput, left);						//add the paragraph element
 					
@@ -101,12 +117,17 @@
 			var rightName = "";
 			
 			//guess left name, then see if we're right.
-			var i = 0;
+			var i = 3;
 			for (; i < allText.length - 1; i++){
-					leftName = allText.substring(0, allText.indexOf(","));
-					if (allText.charAt(i + leftName.length + 2) == "["		//check if there's a [ after their name, plus space for , and the space
-					  && allText.charAt(i + leftName.length + 17) == "]") {
-					  i = i + 19; //skip past this name
+					leftName = allText.substring(i, allText.indexOf(","));
+					if (parseHTMLElements(allText, i - 3) == "p"
+					  && allText.charAt(i + leftName.length + 2) == "["		//check if there's a [ after their name, plus space for , and the space
+					  && allText.charAt(i + leftName.length + 5) == "."
+					  && allText.charAt(i + leftName.length + 8) == "."
+					  && allText.charAt(i + leftName.length + 14) == ":"
+					  && allText.charAt(i + leftName.length + 17) == "]"
+					  && parseHTMLElements(allText, i + leftName.length + 18) == "br") {
+						i = i + 24; //skip past this name
 						break;
 					}
 			} 				
@@ -117,13 +138,18 @@
 			for (; i < allText.length - 1; i++){
 				rightName = (allText.substring(i, allText.indexOf(",", i)));
 				if (rightName == leftName){
-					i = i + 19;
+					i = i + 24;
 				}
-				if (rightName != leftName
-				  && rightName.indexOf("\n") == -1
+				if (parseHTMLElements(allText, i - 3) == "p"
+				  && rightName != leftName
 				  && allText.charAt(i + rightName.length == ",")
 				  && allText.charAt(i + rightName.length + 2) == "["		//same as before, but with right name
-				  && allText.charAt(i + rightName.length + 17) == "]"){
+				  && allText.charAt(i + rightName.length + 5) == "."
+				  && allText.charAt(i + rightName.length + 8) == "."
+				  && allText.charAt(i + rightName.length + 14) == ":"
+				  && allText.charAt(i + rightName.length + 17) == "]"
+				  && allText.charAt(i + rightName.length + 17) == "]"
+				  && parseHTMLElements(allText, i + rightName.length + 18) == "br"){
 					break;	//make sure we didn't just grab the same name
 				}
 			}
@@ -152,10 +178,42 @@
 			createParagraphElement(toOutput, left);
 		}
 		
+		//****************** DUMP *******************
+		//Used in debugging. Just dump what's in the textbox.
+		function dumpDecipher(allText){
+			document.getElementById("shitToWrite").innerHTML = allText;
+		}
+		
+		
+		//****************** Helper for parsing HTML from input ******************
+		//Determines if part of the string is an html element or not.
+		// If HTML element is found, returns a string of element name without brackets. 
+		//	IE, <p> returns p, </strong> returns /strong.
+		// If nothing is found, returns NONE
+		function parseHTMLElements(text, position){
+			if 		(text.substring(position, position+3) == "<p>")		{ return "p"; } 
+			else if	(text.substring(position, position+4) == "</p>")	{ return "/p"; } 
+			else if	(text.substring(position, position+6) == "<br />")	{ return "br"; } 
+			else if (text.substring(position, position+8) == "<strong>"){ return "strong"; }
+			else if (text.substring(position, position+9) == "</strong>"){ return "/strong"; }
+			else if (text.substring(position, position+4) == "<em>") 	{ return "em"; }
+			else if (text.substring(position, position+5) == "</em>")	{ return "/em"; }
+			else 	return "NONE";
+		}
+		
+		// Sanitizes HTML content, returning only the text used.
+		// from https://stackoverflow.com/questions/1912501/unescape-html-entities-in-javascript/34064434#34064434
+		function htmlDecode(input){
+			var doc = new DOMParser().parseFromString(input, "text/html");
+			return doc.documentElement.textContent;
+		}
+		
 		//****************** helper methods for parsing input ******************
 		//takes in the text to put in the paragraph element and whether the paragraph is on left or right
 		//returns the created paragraph element.
 		function createParagraphElement(text, isLeft){
+			text = htmlDecode(text);
+		
 			var paragraphElement = document.createElement("p");
 			paragraphElement.setAttribute("class", isLeft ? "leftRP" : "rightRP");
 			paragraphElement.setAttribute("style", "height:auto;");
@@ -356,12 +414,14 @@
 		HTML CODE
 	************************************************************************************************************************************-->
 <body>
+	
 	<div id="userInputRp">
 		<!-- Where user inputs text -->
 		<textarea rows="10" cols="40" name="rp" id="rp"></textarea> 
-	
+		<script>CKEDITOR.replace('rp');</script>
+		
 		<!-- Input buttons. Save button is nothing to start because we can't save what user didn't 'compile' -->
-		<br />
+		<br />		
 		<input type="submit" value="Make this look nice!" onclick="makeItNoice()" style="margin-bottom: 10px">
 		<a id="saveBtn"></a>
 	</div>
@@ -369,11 +429,13 @@
 	<!-- radio buttons for what messenger the user was using -->
 	<form action="" style="float:right;">
 		<input type="radio" name="messenger" value="telegram" checked="checked"> Telegram<br>
-		<input type="radio" name="messenger" value="other"> Other
+		<input type="radio" name="messenger" value="other"> Other<br>
+		<input type="radio" name="messenger" value="dump"> Dump
 	</form>
 	
 	<div id="shitToWrite">
 		<!-- Where the rp text will go -->
+		
 	</div>
 </body>
 </html>

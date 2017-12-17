@@ -8,6 +8,10 @@ CKEDITOR.editorConfig = function( config ) {
 	// For complete reference see:
 	// http://docs.ckeditor.com/#!/api/CKEDITOR.config
 
+    config.toolbar = [
+        [ 'Bold', 'Italic', 'Underline', 'Strike', 'Paste', 'Undo', 'Redo', 'Find', 'Replace', 'SelectAll', 'SpellChecker', '-', 'About']
+    ];
+
 	// The toolbar groups arrangement, optimized for a single toolbar row.
 	config.toolbarGroups = [
 		{ name: 'document',	   groups: [ 'mode', 'document', 'doctools' ] },
@@ -15,8 +19,6 @@ CKEDITOR.editorConfig = function( config ) {
 		{ name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ] },
 		{ name: 'forms' },
 		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-		{ name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ] },
-		{ name: 'links' },
 		{ name: 'insert' },
 		{ name: 'styles' },
 		{ name: 'colors' },

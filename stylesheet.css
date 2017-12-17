@@ -1,9 +1,24 @@
+/*************************************************************
+*	Suzanne Kersten
+*	12/16/2017
+*	Formatting for index.html page.
+**************************************************************/
 /*Make the body more centered. */
 body {
 	width: 85%;
 	margin: auto;
 	margin-top: 15px;
-	
+}
+
+/********** INPUTS ****************************/
+/*submit buttons: Pretty much the 'make it noice' button*/
+input[type=submit] {
+	margin-bottom: 10px;
+}
+
+/*messenger client choice.*/
+#messengerForm {
+	float: right;
 }
 
 /*The box that they put the rp text into. */
@@ -13,45 +28,20 @@ body {
 	width: 30%;
 }
 
+/********** GENERATED OUTPUT ****************************/
 /* The whole rp chat area. */
-#shitToWrite {
+#rpOutput {
 	max-width: 800px;
 	min-width: 400px;
 	margin: auto;
 }
 
-/* little notification that a certain chat bubble has been shortened from it's original text
-	to fit in an area. */
-.shortenedTextTag {
-	margin: auto; 
-	background-color: #222222;
-	color: #ffffff;
-	border-radius: 5px;
-	font-size: 14px;
-	position:absolute;
-
-}
-
-/* delete if I'm not using the dividers */
-.divider {
-	margin-top: 6px;
-	margin-bottom: 6px;
-	margin-left: 5%;
-	margin-right: 5%;
-	float: right;
-	width: 90%;
-	height: 5px;
-	border-radius: 100px;
-	background-color: #6c00d9;
-}
-
-/* Clasifies one of the two types of rp chat bubbles. */
-.leftRP {
+/* Basic formatting for the rp text bubbles. */
+.leftRP, .rightRP {
 	max-width: 75%;
 	min-width: 40%;
-	background-color: #E9E8F1;
 	font-size: 14px;
-	font-color: #25201C;
+	color: #25201C;
 	font-family: Verdana, sans-serif;
 	padding: 10px;
 	margin: 0px;
@@ -60,37 +50,29 @@ body {
 	float: left;
 	clear: both;
 }
-	
-/* similar to above, but it flots to the right and is colored differently. */
-.rightRP {
-	max-width: 75%;
-	min-width: 40%;
-	background-color: #DCF2D4;
-	font-size: 14px;
-	font-color: #25201C;
-	font-family: Verdana, sans-serif;
-	padding: 10px;
-	margin: 0px;
-	margin-bottom: 4px;
-	border-radius: 10px;
+
+/*left rp bubbles need to be on the left */
+.leftRP{
+	float: left;
+	background-color: #E9E8F1;
+}
+/*right rp bubbles need to be a dif. color on the right */
+.rightRP{
 	float: right;
-	clear: both;
+	background-color: #DCF2D4;
 }
 
+/********** SPLITTING ELEMENTS ****************************/
 /* The panel that has save, cancel, and other options for editing the post. */
 .editControl {
 	margin: 0px;
 	float: left;
 	clear: both;
 }
+
 /* If the rp is following a right rp post, make it float right. */
 p.rightRP + .editControl{
 	float: right;
-}
-
-/* Used to clarify to the user what the currently held rp post is. */
-#heldRpPost {
-	background-color: #cc99ff;
 }
 
 /*Used to clarify to the user what rp post is being edited by them. */

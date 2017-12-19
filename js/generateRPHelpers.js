@@ -1,6 +1,6 @@
 /****************************************************************
 *   Suzanne Kersten
-*	12/16/2017
+*	12/18/2017
 *	Helper functions for generating RP's, such as santizing
 *   html input and creating properly formatted html p tags.
 *
@@ -11,10 +11,10 @@
 // based on the user's radio button choice.
 function makeItNoice() {
     var allText = CKEDITOR.instances.rp.getData();		//Text that is in the user input textArea
-
+	
     if (isDebug) console.log(allText);
     document.getElementById("rpOutput").innerHTML = "";	//reset current generated rp
-
+	
     //get what chat client the user chose
     var messenger = document.getElementsByName("messengerRadioList");
     if (messenger[0].checked) {			//user chose telegram
@@ -24,6 +24,40 @@ function makeItNoice() {
     }
 
     activateSaveButton();		//make the save button available
+}
+
+//****************** create username headers ******************
+function generateUsernameHeaders(){
+	//left header
+	var leftHeaderElement = document.createElement("h2");
+	leftHeaderElement.setAttribute("class", "leftUsernameHeader");
+	var t = document.createTextNode(leftName);
+	leftHeaderElement.appendChild(t);
+	
+	//right header
+	var rightHeaderElement = document.createElement("h2");
+	rightHeaderElement.setAttribute("class", "rightUsernameHeader");
+	var t2 = document.createTextNode(rightName);
+	rightHeaderElement.appendChild(t2);
+	
+	//div to hold it all in place
+	var div = document.createElement("div");
+	div.setAttribute("class", "usernameHeaders");
+	div.appendChild(leftHeaderElement);
+	div.appendChild(rightHeaderElement);
+	document.getElementById("rpOutput").appendChild(div);
+}
+
+//****************** setup leftName and rightName ******************
+//keeps track of the leftName and rightName so that it can be used
+// in setting up paragraph elements.
+var leftName = "";
+var rightName = "";
+function setLeftName(username){
+	leftName = htmlDecode(username);
+}
+function setRightName(username){
+	rightName = htmlDecode(username);
 }
 
 //****************** Other ******************
@@ -103,5 +137,5 @@ function createParagraphElement(text, isLeft) {
 
     var t = document.createTextNode(text);
     paragraphElement.appendChild(t);
-    document.getElementById("rpOutput").appendChild(paragraphElement);
+	document.getElementById("rpOutput").appendChild(paragraphElement);
 }

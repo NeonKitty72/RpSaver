@@ -1,6 +1,6 @@
 /****************************************************************
 *   Suzanne Kersten
-*	12/16/2017
+*	12/18/2017
 *	Generates output based on Telegram's way of formatting
 *   text when it's copy/pasted into a textbox.
 *
@@ -14,9 +14,12 @@ function telegramDecipher(allText) {
     var names = parseTelegramNames(allText);
     var leftName = names[0], rightName = names[1];		//the names of the two rpers
     if (isDebug) console.log("Left Name: " + leftName + " |Right Name: " + rightName);
+	setLeftName(names[0]);
+	setRightName(names[1]);
+	generateUsernameHeaders();
+	
     var toOutput = "";									//the text to output
     var left = 1;										//whether to align text left or right
-
     for (var i = 0; i < allText.length; i++) {
 
         //Skip over any html tags.
@@ -29,7 +32,7 @@ function telegramDecipher(allText) {
             && allText.charAt(i + leftName.length + 2) == "["		//check for [ after name, plus ,<space>
             && allText.charAt(i + leftName.length + 17) == "]") {	// and the ending ]
             left = true;
-            i = i + leftName.length + 24;								//24 is total 'header' text after user's name
+            i = i + leftName.length + 24;							//24 is total 'header' text after user's name
         } else if (allText.charAt(i) == rightName.charAt(0)
             && allText.charAt(i + rightName.length + 2) == "["		//same as before, but with right name
             && allText.charAt(i + rightName.length + 17) == "]") {
@@ -39,9 +42,8 @@ function telegramDecipher(allText) {
 
         //output text, reset vars for next output
         if (parseHTMLElements(allText, i) == "/p" && i + 4 != allText.length) {	//account for last /p
-            toOutput = (left ? leftName : rightName) + ": " + toOutput;	//add in the users name
-            createParagraphElement(toOutput, left);						//add the paragraph element
-
+            username = (left ? leftName : rightName);
+			createParagraphElement(toOutput, left);		//add the paragraph element
             toOutput = "";	//reset toOutput
         }
 
@@ -52,7 +54,7 @@ function telegramDecipher(allText) {
     } //end of for loop
 
     if (toOutput != "") {
-        toOutput = (left ? leftName : rightName) + ": " + toOutput;	//needed to grab the last line of text
+		username = (left ? leftName : rightName);
         createParagraphElement(toOutput, left);						//add the paragraph element
     }
 } //end of telegramDecipher

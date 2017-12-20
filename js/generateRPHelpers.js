@@ -19,9 +19,11 @@ function makeItNoice() {
     var messenger = document.getElementsByName("messengerRadioList");
     if (messenger[0].checked) {			//user chose telegram
         telegramDecipher(allText);
-    } else if (messenger[1].checked) { 	//user chose other
-        otherDecipher(allText);
-    }
+    } else if (messenger[1].checked) { 	//user chose discord
+        discordDecipher(allText);
+    } else if (messenger[2].checked) {	//user chose other
+		otherDecipher(allText);
+	}
 
     activateSaveButton();		//make the save button available
 }

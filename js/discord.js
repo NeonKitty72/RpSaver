@@ -17,7 +17,13 @@ function discordDecipher(allText) {
 	setRightName(names[1]);
 	generateUsernameHeaders();
 	
-    
+    for (var i = 0; i < allText.length - 30; i++){
+		var sub = allText.substring(i, i + 29);
+		if (isDiscordDate(sub)){
+			console.log("found date: I: " + i + " | " + sub);
+		}
+	}
+	
 } //end of telegramDecipher
 
 
@@ -43,7 +49,7 @@ function parseDiscordNames(allText) {
 	
 	for (; i < allText.length - 1; i++) {
 		rightName = allText.substring(i, allText.indexOf("-", i));
-		console.log(allText.indexOf("-") + "| " + i + "| " + rightName);  
+		//console.log(allText.indexOf("-") + "| " + i + "| " + rightName);  
 		if (rightName != leftName
 		  && parseHTMLElements(allText, i - 8) == "strong"
 		  && parseHTMLElements(allText, i + (rightName.length - 9)) == "/strong"){
@@ -53,4 +59,20 @@ function parseDiscordNames(allText) {
 	}
 
     return [leftName, rightName];
+}
+
+/*
+	<p><strong>QueenSuzy</strong>-12/11/2017</p><p><em>gasp!!</em></p><p>how are you??</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>I&rsquo;m ok</p><p>You??</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>I&#39;m alright, kinda meh</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>aww</p><p>eat chocolate</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>I don&#39;t have any!</p><p>wait</p><p>no I do</p><p>I have a snickers ice cream</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>good</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>yee3e</p><p>December 19, 2017</p><p><strong>Sapphykinz</strong>-Yesterday at 9:38 AM</p><p>Slurp</p><p><strong>QueenSuzy</strong>-Today at 5:47 PM</p><p>slrrrpp</p>
+	*/
+	
+
+function isDiscordDate(date){
+	var discordDate = /(Yesterday|Today|Last\s(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday))\sat\s\d:\d\d\s(A|P)M/;
+	var normalDate = /\d\d\/\d\d\/\d\d\d\d/
+	
+	if (date.search(discordDate) == 0
+		|| date.search(normalDate) == 0){
+			return true;
+		}
+	return false;
 }

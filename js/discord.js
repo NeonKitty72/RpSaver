@@ -38,22 +38,32 @@ function parseDiscordNames(allText) {
 	<p><strong>QueenSuzy</strong>-12/11/2017</p><p><em>gasp!!</em></p><p>how are you??</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>I&rsquo;m ok</p><p>You??</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>I&#39;m alright, kinda meh</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>aww</p><p>eat chocolate</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>I don&#39;t have any!</p><p>wait</p><p>no I do</p><p>I have a snickers ice cream</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>good</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>yee3e</p><p>December 19, 2017</p><p><strong>Sapphykinz</strong>-Today at 9:38 AM</p><p>Slurp</p><p><strong>QueenSuzy</strong>-Today at 5:47 PM</p><p>slrrrpp</p>
 	*/
 	
+	
+	var pattern = /<p><strong>\w*<\/strong>-/;
+	
     //guess left name, then see if we're right.
     var i = 7;
-    for (; i < allText.length - 1; i++) {
-        leftName = allText.substring(i, allText.indexOf("-"));
+    for (; i < allText.length - 30; i++) {
+		//see is there is a strong before, /strong after, and that there's a date after the -
+        leftName = allText.substring(i, (allText.indexOf("-", i) - 9));
+		console.log("IsDiscordDate: " + isDiscordDate(allText.substring(i + leftName.length + 9, i + leftName.length + 29)) +"Left Name:" + leftName);
         if (parseHTMLElements(allText, i - 8) == "strong"
-		  && parseHTMLElements(allText, i + (leftName.length - 9)) == "/strong")        
+		  && parseHTMLElements(allText, i + (leftName.length)) == "/strong"
+		  && isDiscordDate(allText.substring(i + leftName.length + 10, i + leftName.length + 40))){
+			//leftName = leftName.substring(0, leftName.length - 8);
             break;
+		}
     }
 	
-	for (; i < allText.length - 1; i++) {
+	i = i + leftName.length;
+	
+	for (; i < allText.length - 30; i++) {
 		rightName = allText.substring(i, allText.indexOf("-", i));
 		//console.log(allText.indexOf("-") + "| " + i + "| " + rightName);  
 		if (rightName != leftName
 		  && parseHTMLElements(allText, i - 8) == "strong"
-		  && parseHTMLElements(allText, i + (rightName.length - 9)) == "/strong"){
-			
+		  && parseHTMLElements(allText, i + (rightName.length - 9)) == "/strong"
+		  && isDiscordDate(allText.substring(i + rightName.length + 1, i + rightName.length + 29))){
 			break;
 		 }
 	}
@@ -61,18 +71,25 @@ function parseDiscordNames(allText) {
     return [leftName, rightName];
 }
 
-/*
-	<p><strong>QueenSuzy</strong>-12/11/2017</p><p><em>gasp!!</em></p><p>how are you??</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>I&rsquo;m ok</p><p>You??</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>I&#39;m alright, kinda meh</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>aww</p><p>eat chocolate</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>I don&#39;t have any!</p><p>wait</p><p>no I do</p><p>I have a snickers ice cream</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>good</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>yee3e</p><p>December 19, 2017</p><p><strong>Sapphykinz</strong>-Yesterday at 9:38 AM</p><p>Slurp</p><p><strong>QueenSuzy</strong>-Today at 5:47 PM</p><p>slrrrpp</p>
-	*/
-	
-
 function isDiscordDate(date){
-	var discordDate = /(Yesterday|Today|Last\s(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday))\sat\s\d:\d\d\s(A|P)M/;
-	var normalDate = /\d\d\/\d\d\/\d\d\d\d/
+	var dayOfWeek = "(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)"
+	var fullPattern = "(Yesterday|Today|Last " + dayOfWeek + ") at \\d:\\d\\d (A|P)M";
+	var discordDate = new RegExp(fullPattern);
+	
+	var normalDate = /\d\d\/\d\d\/\d\d\d\d/;
 	
 	if (date.search(discordDate) == 0
 		|| date.search(normalDate) == 0){
 			return true;
 		}
 	return false;
+}
+
+function isDiscordHeaderAtPos(alltext, position){
+	if (parseHTMLElements(allText, position) == "strong"
+		  && parseHTMLElements(allText, position + leftName.length) == "/strong"
+		  && allText.charAt(position + leftName.legnth + 8) == '-'
+		  && isDiscordDate(allText.substring(i + leftName.length + 8, i + leftName.length + 29))){        
+            
+		}
 }

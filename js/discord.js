@@ -1,11 +1,107 @@
 /****************************************************************
 *   Suzanne Kersten
-*	12/19/2017
+*	12/29/2017
 *	Generates output based on Discord's way of formatting
 *   text when it's copy/pasted into a textbox.
 *
 *   TODO:
 *****************************************************************/
+
+class discordDecipher{
+	constructor(allText){
+		this.allText = allText;
+		this.setupRegularExpressions();		
+		
+		//setup stuff
+		this.parseDiscordNames();
+		
+		
+	}
+	
+	setupRegularExpressions(){
+		var dayOfWeek = "(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)"
+		//Last <dayOfWeek> at XX:XX PM
+		var discordDatePattern = "(?:Yesterday|Today|Last " + dayOfWeek + ") at \\d{1,2}:\\d{2} (?:A|P)M";
+		//used again in header regular expressions
+		this.fullDatePattern = "(?:" + discordDatePattern + "|\\d{2}/\\d{2}/\\d{4})<\\/p>";
+		//username-(Last <dayOfWeek> at XX:XX PM OR XX/XX/XXXX)
+		var genericDateHeader = "<p><strong>(\\w*)<\\/strong>-" + this.fullDatePattern;
+		this.discordDateRegExp = new RegExp(genericDateHeader, "g");
+	}
+	
+	parseDiscordNames(){
+		//ideas: make this non-global, start at the beginning and go through one header at a time.
+		// Then it doesn't crash with bigger data sets.
+		//ie, match starting at 0. Grab left name.
+		// Then set i to length of that. Keep grabbing next header while the names are the same, 
+		// then stop when we get a new name and set that to right name.
+		
+		
+		var result = this.allText.match(this.discordDateRegExp);
+		console.log(result);
+		
+		this.leftName = this.discordDateRegExp.exec(result[0])[1];
+		this.leftNameHeaderLength = result[0].length;
+		
+		this.discordDateRegExp.lastIndex = 0;
+		this.rightName = this.discordDateRegExp.exec(result[1])[1];
+		
+		
+		this.headerRegExp = "<p><strong>(" + this.leftName + "|" + this.rightName + ")<\\/strong>-" + this.fullDatePattern;
+		
+		console.log("Left Name:" + this.leftName + "| Right Name: " + this.rightName);		
+	} //end parseDiscordNames
+	
+	
+	isDiscordDateAtPos(position){
+		if (this.allText.search(this.discordDateRegExp) == position){
+			return true;
+		}
+		return false;
+	}
+}
+	/*
+	Setup the generic discordDate regExp, but add the <p><strong>(\w*)</strong>-(header)</p>into the mix. 
+for every element, starting at 0 and counting up with ice
+	if isDiscordDateAtPos with text and i
+		result = discordDate.exec(allText);
+		set name to result[1];
+		i++ 
+		break;
+	endif
+endfor
+for every element, continuing where last for loop left off
+	if isDiscordDateAtPos with text and i 
+		result = discordDate.exec(allText);
+		if result[1] is not equal to leftName
+			set rightName to result[1]
+			i++
+			break;
+		endif
+	endif
+endfor
+
+then setup the names as leftName and rightName
+this.leftName = leftName;
+this.rightName = rightName;
+set up header regExp as described above
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 //Parses through the text given, looking for discord-specific
 //	ways of formatting.
 function discordDecipher(allText) {
@@ -34,9 +130,9 @@ function parseDiscordNames(allText) {
     var leftName = "";
     var rightName = "";
 
-	/*
+	
 	<p><strong>QueenSuzy</strong>-12/11/2017</p><p><em>gasp!!</em></p><p>how are you??</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>I&rsquo;m ok</p><p>You??</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>I&#39;m alright, kinda meh</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>aww</p><p>eat chocolate</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>I don&#39;t have any!</p><p>wait</p><p>no I do</p><p>I have a snickers ice cream</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>good</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>yee3e</p><p>December 19, 2017</p><p><strong>Sapphykinz</strong>-Today at 9:38 AM</p><p>Slurp</p><p><strong>QueenSuzy</strong>-Today at 5:47 PM</p><p>slrrrpp</p>
-	*/
+	
 	
 	
 	var pattern = /<p><strong>\w*<\/strong>-/;
@@ -92,4 +188,75 @@ function isDiscordHeaderAtPos(alltext, position){
 		  && isDiscordDate(allText.substring(i + leftName.length + 8, i + leftName.length + 29))){        
             
 		}
+} */
+
+
+
+
+/*
+//**************************
+//Guesses the left and right person from the text given: Basically looks for the first two messages and guesses from there
+//returns left and right name as a 2-slot array: left, then right.
+function parseDiscordNames(allText) {
+    var leftName = "";
+    var rightName = "";
+	
+	
+	var pattern = /<p><strong>\w*<\/strong>-/;
+	
+    //guess left name, then see if we're right.
+    var i = 0;
+    for (; i < allText.length - 30; i++) {
+		//see is there is a strong before, /strong after, and that there's a date after the -
+        leftName = allText.substring(i, (allText.indexOf("-", i) - 9));
+		console.log("IsDiscordDate: " + isDiscordDate(allText.substring(i + leftName.length + 10, i + leftName.length + 29)) +"Left Name:" + leftName + "Discord date substring: " + allText.substring(i + leftName.length + 10, i + leftName.length + 40));
+		
+        if (parseHTMLElements(allText, i - 8) == "strong"
+		  && parseHTMLElements(allText, i + (leftName.length)) == "/strong"
+		  && isDiscordDate(allText.substring(i + leftName.length + 10, i + leftName.length + 40))){
+			//leftName = leftName.substring(0, leftName.length - 8);
+            break;
+		}
+    }
+	
+	i = i + leftName.length;
+	
+	for (; i < allText.length - 30; i++) {
+		rightName = allText.substring(i, (allText.indexOf("-", i) - 9));
+		console.log("next -: " + allText.indexOf("-", i) + "| " + "i: " + i + "| " + rightName);  
+		if (rightName != leftName
+		  && parseHTMLElements(allText, i - 8) == "strong"
+		  && parseHTMLElements(allText, i + (rightName.length)) == "/strong"
+		  && isDiscordDate(allText.substring(i + rightName.length + 10, i + rightName.length + 40))){
+			break;
+		 }
+	}
+
+    return [leftName, rightName];
 }
+
+function getDiscordDateRegExp(){
+	var dayOfWeek = "(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)"
+	var fullPattern = "(?:Yesterday|Today|Last " + dayOfWeek + ") at \\d{1,2}:\\d{2} (?:A|P)M";
+	return new RegExp(fullPattern);
+}
+
+//Last Monday at 12:52 PM</p><p>
+function isDiscordDate(date){
+	var discordDate = getDiscordDateRegExp();
+	var normalDate = /\d\d\/\d\d\/\d\d\d\d/;
+	
+	if (date.search(discordDate) == 0
+		|| date.search(normalDate) == 0){
+			console.log(discordDate.exec(date));
+			return true;
+		}
+	return false;
+}
+
+function makeHeaderRegExp(name){
+	var base = "<p><strong>" + name + "<\/strong>-(" + getDiscordDateRegExp() + "|\\d{2}/\\d{2}/\\d{4})";
+	return new RegExp(base);
+}
+
+*/

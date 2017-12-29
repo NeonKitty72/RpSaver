@@ -1,0 +1,84 @@
+So, I need to parse through this:
+/*
+	<p><strong>QueenSuzy</strong>-12/11/2017</p><p><em>gasp!!</em></p><p>how are you??</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>I&rsquo;m ok</p><p>You??</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>I&#39;m alright, kinda meh</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>aww</p><p>eat chocolate</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>I don&#39;t have any!</p><p>wait</p><p>no I do</p><p>I have a snickers ice cream</p><p><strong>Sapphykinz</strong>-12/11/2017</p><p>good</p><p><strong>QueenSuzy</strong>-12/11/2017</p><p>yee3e</p><p>December 19, 2017</p><p><strong>Sapphykinz</strong>-Today at 9:38 AM</p><p>Slurp</p><p><strong>QueenSuzy</strong>-Today at 5:47 PM</p><p>slrrrpp</p>
+	*/
+	
+DATE REGEXP:
+	same as one I have set up but with <p><strong>(\w*)</strong>-(header)</p>
+	
+HEADER REGEXP: 
+	set it up so it's <p><strong>(leftName|rightName)</strong>-(date)</p>
+	
+	
+Getting the names is down pat, use the regular expressions. Better to use one Bigger reg exp that just works with the whole header. So...
+
+Setup the generic discordDate regExp, but add the <p><strong>(\w*)</strong>-(header)</p>into the mix. 
+for every element, starting at 0 and counting up with ice
+	if isDiscordDateAtPos with text and i
+		result = discordDate.exec(allText);
+		set name to result[1];
+		i++ 
+		break;
+	endif
+endfor
+for every element, continuing where last for loop left off
+	if isDiscordDateAtPos with text and i 
+		result = discordDate.exec(allText);
+		if result[1] is not equal to leftName
+			set rightName to result[1]
+			i++
+			break;
+		endif
+	endif
+endfor
+
+then setup the names as leftName and rightName
+this.leftName = leftName;
+this.rightName = rightName;
+set up header regExp as described above
+set up how many characters left and right are:
+leftCharCount and rightCharCount == 0;
+for int i = 0; both counts are 0 and i != allText.length; i++
+	var count = headerRegExp.exec(allText);
+	if count[1] == leftName
+		leftCharCount = count[0].length
+	else if count[1] == rightName
+		rightCharCount = count[0].length
+
+
+So once we have names, going through the whole text should be pretty easy:
+for: go through entire text, one character at a time. i = curr character.
+	var isHeader = isDiscordHeaderAtPos(text, i);
+	if isHeader
+		i = i + (isHeader == leftName ? leftNameCharNumber : rightNameCharNumber);
+		//skip however many characters that is (might need to set that up as a variable.)
+	
+	/* TODO
+	if is a html tag for starting indent, bold, etc (eg is <strong>, <em>, etc)
+		apply the tag and skip it.
+	
+	if is a html tag for ending indent, bold, etc (eg is </strong>, <em>, etc)
+		end the tag and skip it.
+	*/
+	
+	if is a tag other than </p>
+		skip the tag.
+	
+	if is </p> at current position
+		createParagraphElement with current toOutputText
+		toOutputText = ""
+	endif
+
+	if (allText.charAt(i) != "\r" && allText.charAt(i) != "\n") {
+            toOutput += allText.charAt(i)
+    }
+	
+
+endfor	
+
+
+/***************************
+isDiscordHeaderAtPos(text, position)
+	if text.search(headerRegExp) == position)
+		return headerRegExp.exec(text)[1];	//return the username
+	else return ""

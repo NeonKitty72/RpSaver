@@ -20,7 +20,7 @@ function makeItNoice() {
     if (messenger[0].checked) {			//user chose telegram
         telegramDecipher(allText);
     } else if (messenger[1].checked) { 	//user chose discord
-        discordDecipher(allText);
+        let discord = new discordDecipher(allText);
     } else if (messenger[2].checked) {	//user chose other
 		otherDecipher(allText);
 	}

@@ -18,6 +18,10 @@ class discordDecipher{
 		
 	}
 	
+	//create the basic regular expressions used to parse for generic header dates wihtout usernames.
+	// added local vars:
+	// fullDatePattern - 	regular expression in string form for all forms of discord date (after the -)
+	// discordDateRegExp - 	regular expression that gets generic discord headers and saves the found username when used with exec.
 	setupRegularExpressions(){
 		var dayOfWeek = "(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)"
 		//Last <dayOfWeek> at XX:XX PM
@@ -29,36 +33,46 @@ class discordDecipher{
 		this.discordDateRegExp = new RegExp(genericDateHeader, "g");
 	}
 	
-	parseDiscordNames(){
-		//ideas: make this non-global, start at the beginning and go through one header at a time.
-		// Then it doesn't crash with bigger data sets.
-		//ie, match starting at 0. Grab left name.
-		// Then set i to length of that. Keep grabbing next header while the names are the same, 
-		// then stop when we get a new name and set that to right name.
-		
-		
+	//figures out the chatter's usernames and stores them as local variables and in a special regular expression.
+	// added local vars:
+	// leftName -				the first name found in the input text.
+	// rightName -		the next name found in the input text that isn't the same as the leftName.
+	// headerRegExp -		a regular expression with the two names built in
+	parseDiscordNames(){		
 		var result = this.allText.match(this.discordDateRegExp);
 		console.log(result);
 		
-		this.leftName = this.discordDateRegExp.exec(result[0])[1];
-		this.leftNameHeaderLength = result[0].length;
+		//get the left name
+		this.leftName = this.discordDateRegExp.exec(result[0])[1];		//get first name from header text array
+		//this.leftNameHeaderLength = result[0].length;
 		
-		this.discordDateRegExp.lastIndex = 0;
-		this.rightName = this.discordDateRegExp.exec(result[1])[1];
+		//hunt through the rest of the array for the next name that isn't the same as the previously found name.
+		var arrayPos = 0;
+		do {
+			arrayPos++;
+			this.discordDateRegExp.lastIndex = 0;
+			this.rightName = this.discordDateRegExp.exec(result[arrayPos])[1];	//get name from header text array
+		} while (this.rightName == this.leftName);
+		//this.rightNameHeaderLength = result[arrayPos].length;
 		
-		
-		this.headerRegExp = "<p><strong>(" + this.leftName + "|" + this.rightName + ")<\\/strong>-" + this.fullDatePattern;
-		
-		console.log("Left Name:" + this.leftName + "| Right Name: " + this.rightName);		
+		//generate username headers
+		setLeftName(this.leftName);
+		setRightName(this.rightName);
+		generateUsernameHeaders();
+		//set up the regular expression for headers based on the 
+		var header = "<p><strong>(" + this.leftName+"|"+this.rightName + ")<\\/strong>-" + this.fullDatePattern;
+		this.headerRegExp = new RegExp(header);
+		console.log("Left Name: " + this.leftName + "| Right Name: " + this.rightName);	
+
 	} //end parseDiscordNames
 	
-	
+	/*
 	isDiscordDateAtPos(position){
 		if (this.allText.search(this.discordDateRegExp) == position){
 			return true;
 		}
 		return false;
-	}
+	} */
 }
 	/*
 	Setup the generic discordDate regExp, but add the <p><strong>(\w*)</strong>-(header)</p>into the mix. 

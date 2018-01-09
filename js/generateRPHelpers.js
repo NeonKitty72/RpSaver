@@ -10,9 +10,14 @@
 //basically, a menu that chooses what style to expect the input as
 // based on the user's radio button choice.
 function makeItNoice() {
-    var allText = CKEDITOR.instances.rp.getData();		//Text that is in the user input textArea
+
+	var testString = "<p><strong>rice</strong>-12/17/2017</p><p>&lt;3</p><p>I play Bard a lot in D&amp;D. So |3</p><p>Also I&#39;m trying to draw bad. But I don&#39;t think it&#39;s bad enough fuck</p><p><strong>QueenSuzy</strong>-12/17/2017</p><p>Why do you wanna draw bad?</p><p><strong>rice</strong>-12/17/2017</p><p>For fun and nostalgia</p><p><strong>QueenSuzy</strong>-12/17/2017</p><p>ahh, sounds kinda hard tho. Like, If imagine it&#39;s hard to get rid of those ingrained good art notions</p><p><strong>rice</strong>-12/17/2017</p><p>Yeah. :V</p><p>when I wake up tomorrow, I&#39;m gonna just draw using thick brushes and detail with far too thin brushes.</p><p><strong>QueenSuzy</strong>-12/17/2017</p><p>that&#39;s a good way to force yourself to be worse lol</p><p><strong>rice</strong>-12/17/2017</p><p>Yeah it would be lol</p><p><strong>QueenSuzy</strong>-12/17/2017</p><p>just put it through 40% jpg compression</p><p><strong>rice</strong>-12/17/2017</p><p>Yeah, that would be a step</p>";
+	CKEDITOR.instances.rp.setData(testString);
 	
-    if (isDebug) console.log(allText);
+    var allText = CKEDITOR.instances.rp.getData();		//Text that is in the user input textArea
+    
+	
+	if (isDebug) console.log(allText);
     document.getElementById("rpOutput").innerHTML = "";	//reset current generated rp
 	
     //get what chat client the user chose

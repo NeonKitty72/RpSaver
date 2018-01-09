@@ -14,7 +14,7 @@ class discordDecipher{
 		
 		//setup stuff
 		this.parseDiscordNames();
-		
+		this.generateOutput();
 		
 	}
 	
@@ -65,6 +65,73 @@ class discordDecipher{
 		console.log("Left Name: " + this.leftName + "| Right Name: " + this.rightName);	
 
 	} //end parseDiscordNames
+	
+	
+	
+	generateOutput(){
+		var toOutput = "";
+		var isLeft = true;
+		
+		for (var i = 0; i < this.allText.length; i++){
+			
+			var sub = this.isDiscordDateAtPos(i);
+			if (sub != 0){
+				if (toOutput != ""){
+					createParagraphElement(toOutput, isLeft);		//add the paragraph element
+				}
+				
+				toOutput = "";	//reset toOutput
+				if 		(sub[1] == this.leftName) isLeft = true;
+				else if (sub[1] == this.rightName) isLeft = false;
+				console.log(sub);
+				i += sub[0].length;
+			}
+			
+			if (parseHTMLElements(this.allText, i) == "p" && toOutput != ""){
+				createParagraphElement(toOutput, isLeft);
+				toOutput = "";
+			}
+			
+			toOutput += this.allText.charAt(i);
+			
+			
+		}
+			/*			
+				So once we have names, going through the whole text should be pretty easy:
+for: go through entire text, one character at a time. i = curr character.
+	var isHeader = isDiscordHeaderAtPos(text, i);
+	if isHeader
+		i = i + (isHeader == leftName ? leftNameCharNumber : rightNameCharNumber);
+		//skip however many characters that is (might need to set that up as a variable.)
+
+	
+	if is a tag other than </p>
+		skip the tag.
+	
+	if is </p> at current position
+		createParagraphElement with current toOutputText
+		toOutputText = ""
+	endif
+
+	if (allText.charAt(i) != "\r" && allText.charAt(i) != "\n") {
+            toOutput += allText.charAt(i)
+    }
+			*/			
+		
+
+	}
+	
+	isDiscordDateAtPos(position){
+		var substring = this.allText.substr(position, this.allText.length - position);
+		//console.log(substring);
+		//console.log(substring.search(this.headerRegExp));
+		if (substring.search(this.headerRegExp) == 0){
+			//var substring = this.allText.substr(position, this.allText.length);
+			return this.headerRegExp.exec(substring);
+		}
+		else return 0;
+	}
+		//<p><strong>ButterflyCupcakeSoupPan</strong>-Last Wednesday at 12:59 PM</p>
 	
 	/*
 	isDiscordDateAtPos(position){

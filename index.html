@@ -2,15 +2,15 @@
 *	Suzanne Kersten
 *	12/16/2017
 *	RP-Saver: Saves all your rp's in an easy-to-read format!
-*	
-*	TODO: 
+*
+*	TODO:
 *	* Way to organize RP's, and retrieve them all easily from within the app.
-*		IE, be able to have a 'folder' for 'Kim Stuff' and have a listing 
+*		IE, be able to have a 'folder' for 'Kim Stuff' and have a listing
 *		of all the rp's in that section.
 *	* Add in discord tracking
 *	* Actual good formatting? It works 4 now tho
-*	
-*	Idea: Make structure of first special character, make a 
+*
+*	Idea: Make structure of first special character, make a
 *		struct that tells where it is and what fun to do?
 *		Then push that and use the beginning of special char
 *		to put it all into the Done Output
@@ -22,47 +22,47 @@
 	<title>RP Saver</title>
 	<meta charset="UTF-8">
 	<link rel="stylesheet" type="text/css" href="stylesheet.css">
-	
+
 	<!--***********************************************************
 	JAVASCRIPT CODE
 	************************************************************-->
+    <script>
+        const isDebug = true;	//if true, has debug messages. Otherwise does not.
+    </script>
 	<script src="ckeditor/ckeditor.js"></script>
 	<script src="js/generateRPHelpers.js"></script>
 	<script src="js/telegram.js"></script>
 	<script src="js/discord.js"></script>
 	<script src="js/saving.js"></script>
-	<script src="js/splittingElements.js"></script>	
-	<script>
-		const isDebug = true;	//if true, has debug messages. Otherwise does not.
-	</script>	
+	<script src="js/splittingElements.js"></script>
 </head>
 
 	<!--*****************************************************************
 		HTML CODE
 	******************************************************************-->
 <body>
-	
+
 	<div id="userInputRp">
 		<!-- Where user inputs text -->
-		<textarea rows="10" cols="40" name="rp" id="rp"></textarea> 
+		<textarea rows="10" cols="40" name="rp" id="rp"></textarea>
 		<script>CKEDITOR.replace('rp');</script>
-		
+
 		<!-- Input buttons. Save button is nothing because nothing to save on load. -->
 		<br>
 		<input type="submit" value="Make this look nice!" onclick="makeItNoice()" >
 		<a id="saveBtn"></a>
 	</div>
-	
+
 	<!-- radio buttons for what messenger the user was using -->
 	<form id="messengerForm">
 		<input type="radio" name="messengerRadioList" value="telegram"> Telegram<br>
 		<input type="radio" name="messengerRadioList" value="discord" checked="checked">Discord<br>
 		<input type="radio" name="messengerRadioList" value="other"> Other<br>
 	</form>
-	
+
 	<div id="rpOutput">
 		<!-- Where the rp text will go -->
-		
+
 	</div>
 </body>
 </html>

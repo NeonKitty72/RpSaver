@@ -31,7 +31,6 @@ function checkForValidCSSFileOpen() {
 
 //  Set up the html of the file to save and prepare the save button, actually activating it.
 function finishActivateSaveButton(headText) {
-
     //Set up the basic html of the file to save
     headText = '<html lang="en"><head><title>RP Saver</title><meta charset="UTF-8"><style>' + headText;
     headText = headText + '</style></head><body><div id="rpOutput">';

@@ -17,10 +17,11 @@ function telegramDecipher(allText) {
 	setLeftName(names[0]);
 	setRightName(names[1]);
 	generateUsernameHeaders();
-	
+
     var toOutput = "";									//the text to output
     var left = 1;										//whether to align text left or right
     for (var i = 0; i < allText.length; i++) {
+
 
         //Skip over any html tags.
         var posToSkip = skipHTMLElements(allText, i);

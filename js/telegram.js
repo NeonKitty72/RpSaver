@@ -7,6 +7,7 @@
 *   TODO: Shove checking for if something is a name
 *   (IE ungodly long if in the parseNames) into it's own func.
 *****************************************************************/
+
 //Parses through the text given, looking for telegram-specific
 //	ways of formatting.
 function telegramDecipher(allText) {
@@ -17,47 +18,15 @@ function telegramDecipher(allText) {
 	setLeftName(names[0]);
 	setRightName(names[1]);
 	generateUsernameHeaders();
+    
+    var nameRegExp = new RegExp("(?:" + leftName + "|" + rightName+  "), \\[\\d{2}.\\d{2}.\\d{2} \\d{2}:\\d{2}\\]");
 
-    var toOutput = "";									//the text to output
-    var left = 1;										//whether to align text left or right
-    for (var i = 0; i < allText.length; i++) {
-
-
-        //Skip over any html tags.
-        var posToSkip = skipHTMLElements(allText, i);
-        i += posToSkip;
-        if (posToSkip != 0) { continue; }
-
-        //make sure it's not the header line
-        if (allText.charAt(i) == leftName.charAt(0)
-            && allText.charAt(i + leftName.length + 2) == "["		//check for [ after name, plus ,<space>
-            && allText.charAt(i + leftName.length + 17) == "]") {	// and the ending ]
-            left = true;
-            i = i + leftName.length + 24;							//24 is total 'header' text after user's name
-        } else if (allText.charAt(i) == rightName.charAt(0)
-            && allText.charAt(i + rightName.length + 2) == "["		//same as before, but with right name
-            && allText.charAt(i + rightName.length + 17) == "]") {
-            left = false;
-            i = i + rightName.length + 24;
-        }
-
-        //output text, reset vars for next output
-        if (parseHTMLElements(allText, i) == "/p" && i + 4 != allText.length) {	//account for last /p
-            username = (left ? leftName : rightName);
-			createParagraphElement(toOutput, left);		//add the paragraph element
-            toOutput = "";	//reset toOutput
-        }
-
-        //pick up text until we hit crlf
-        if (allText.charAt(i) != "\r" && allText.charAt(i) != "\n") {
-            toOutput += allText.charAt(i)
-        }
-    } //end of for loop
-
-    if (toOutput != "") {
-		username = (left ? leftName : rightName);
-        createParagraphElement(toOutput, left);						//add the paragraph element
+    
+    var splits = allText.split(nameRegExp);
+    for (var i = 0; i < splits.length; i++){
+        console.log(splits[i]);
     }
+
 } //end of telegramDecipher
 
 

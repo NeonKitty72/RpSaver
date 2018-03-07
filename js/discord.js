@@ -53,7 +53,7 @@ class discordDecipher{
 	// adds local vars:leftName, rightName, headerRegExp
 	parseDiscordNames(){
 		var result = this.allText.match(this.discordDateRegExp);
-		console.log(result);
+		//console.log(result);
 
 		//get the left name
 		this.leftName = this.discordDateRegExp.exec(result[0])[1];		//get first name from header text array
@@ -79,66 +79,21 @@ class discordDecipher{
 
 	} //end parseDiscordNames
 
-	//generates the output for an RP using discord's method. Basically, for every char in allText, see if
-	// it's a header or a html element and deal with it, else add it to an output buffer.
+	//generates the output for an RP using discord's method. 
 	// preconditions: Basically allText has been set, regular expressions setup, and discord names setup.
 	// postconditions: Adds text of rp to the html page.
-	generateOutput(){
-		var toOutput = "";
-		var isLeft = true;
-		var isHeader = 0;
-		var posToSkip = 0;
-
-		//main loop
-		for (var i = 0; i < this.allText.length; i++){
-			//check for header
-			isHeader = this.isDiscordDateAtPos(i);
-			if (isHeader != 0){
-				if (toOutput != "" && this.inMessageDateRegExp.test(toOutput) == false){    //make sure it's not a divider date
-                    createParagraphElement(toOutput, isLeft);
-                }
-                
-				toOutput = "";	//reset toOutput
-				if 		(isHeader[1] == this.leftName) isLeft = true;
-				else if (isHeader[1] == this.rightName) isLeft = false;
-				if (isDebug) console.log("found header:" + isHeader);
-				i += isHeader[0].length;
-			}
-
-			//check and see if there's a new message by the same user
-			if (parseHTMLElements(this.allText, i) == "p" && toOutput != ""){
-				//make sure the message isn't a date
-                
-                if (this.inMessageDateRegExp.test(toOutput) == false){  //make sure it's not a divider date
-                    createParagraphElement(toOutput, isLeft);
-                }
-				toOutput = "";
-			}
-            
-            //skip over html tags
-			//posToSkip = skipHTMLElements(this.allText, i);
-			//i += posToSkip;
-			//if (posToSkip != 0) { continue; }
-
-			//add the current character to the output buffer
-			toOutput += this.allText.charAt(i);
-		}
-
-		//generate last paragraph element if needed.
-		if (toOutput != ""){
-			createParagraphElement(toOutput, isLeft);
-		}
-
-	}
-
-	//figures out if there's a discord date at a passed-in position based on the headerRegExp var.
-	// position - 	The position in this.allText to check for if it's a discord date.
-	// return - 	The header found at the position. If no header found, returns 0.
-	isDiscordDateAtPos(position){
-		var substring = this.allText.substr(position, this.allText.length - position);
-		if (substring.search(this.headerRegExp) == 0){
-			return this.headerRegExp.exec(substring);
-		}
-		else return 0;
+	generateOutput(){        
+        //split all the text to just the sections from each rper
+        var splits = this.allText.split(this.headerRegExp);
+        
+        for (var i = 2; i < splits.length; i+=2){
+            //Discord gives posts in "sets" by each user
+            // so we need to split each "set" into each individual post a user made
+            var secondSplits = splits[i].split("</p><p>");
+            for (var j = 0; j < secondSplits.length; j++){
+                //sends in the actual post and the username from the original split array
+                createParagraphElement(secondSplits[j], (splits[i-1] == this.leftName));
+            }
+        }
 	}
 }

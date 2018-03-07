@@ -1,0 +1,101 @@
+CLASS: Metasymbols
+
+Variables:
+- symbol -> The character that is special in some way, like * or (
+- isWrappedMetasymbol -> basically does it work like (TEXT) or like //TEXT (second way ignores that whole line)  
+- BeginningTag -> the tag to add at the beginning of a section surrounded by the special character
+- EndingTag -> the tag to add at the end of the section.
+
+CLASS: Post
+
+Variables:
+- name -> The name of whoever this post is by.
+- text -> The text of the post.
+
+CLASS: RPGenerator
+
+Variables:
+- inputText -> the text that is passed into the class on generation. Needs to be parsed. In <name>text</name> form.
+- metasymbols -> array of classes of the special characters that need to be accounted for. 
+- metasybmolsRegExps -> array of the regular expressions 
+- outputElement -> The full element that we made that just needs to be added to DOM.
+
+Functions:
+constructor(inputText, names){
+    this.inputText = inputText;
+    var namesRegExp = setupNamesRegExp(names);
+
+    var metasymbols = setupMetasybmols();
+    this.metasymbolsRegExps = setupMetasymbolsRegularExpressions(metasymbols);
+    
+    var posts = splitInputText(namesRegExp);
+    
+    for each post in posts:
+        post = handleMetasymbolsInPost(post);
+    
+    
+
+}
+
+- setupNamesRegExp -> use the names array to create a regular expression <(name1|name2|name3...etc)>(/w)<(name1|name2|name3...etc)/> for the names.
+
+- setupMetasymbols() -> use the form elements to determine what metasymbol variables need to be made and add them to the metasymbols array.
+
+- setupMetasymbolsRegularExpressions(metasymbols) -> Use the metasymbols array to make an array of regular expressions that can be looped through. Remember to differentiate between wrapping ones and non-wrapping ones.
+
+NOTE: from http://justgeeks.blogspot.com/2008/08/looping-through-array-of-regular.html
+var myArray = new Array(/int/gi, /\w/gi); or var myArray = new Array( new RegExp("int", "gi"), new RegExp("\\w", "gi" ); or var myArray = new Array(5); myArray[0] = new RegExp("int", "gi"); myArray[1] = /int/gi
+
+NOTE: from https://stackoverflow.com/questions/8207066/creating-array-of-regular-expressions-javascript
+function unacceptable(pwd){
+    var unforgivable = [
+        "password",
+        "12345678",
+        "8675309",
+        "[a-z]{8,}",
+        "qwerty",
+        "asdfg",
+        "qazwsx",
+        "zxcvb",
+        "letmein",
+        "trustno1",
+        "omnicloud",
+        "monkey"
+    ];
+    var re = new RegExp(unforgivable.join("|"), "i");
+    return re.test(pwd);
+}
+
+- splitInputText(namesRegExp) -> Uses the regular expression (with -g) to split up the input Text into seperate chunks. Loop through those chunks and for each one, split it by each post and add it to the posts array. Basically,
+    -split inputText into an array : var result = this.allText.match(this.discordDateRegExp);
+    for every element in result:
+        -Exec the regExp on every piece to get the variables inside:var execResult =  regExpResult this.discordDateRegExp.exec(result[0]) gives us vars inside
+        -check that execResult 1 and 3 are both names and the same name
+        -split each post up in execResult 2 based on post, with the name gotten from execResult 1.
+            var execResultInnerText = execResult[2];
+            var regExp = <post>(/w)</post>/w;
+            while execResultInnerText != ""
+                var regResult = regExp.exec(execResultInnerText);
+                make new post with regResult[1] and the name found above, add it to the posts array
+                execResultInnerText = regResult[2];
+                
+    return posts array
+                
+        I think that should handle it all...
+
+
+- handleMetasymbolsInPost(post) -> uses the array of metasymbol reg exp's to check for symbols that need to be handled.
+For each post in the posts array, 
+    Basically get the first part of the text, add it in, add in the beginning tag for that symbol, middle text, ending tag for that symbol, then the ending text. 
+    Before actually adding things in, though, call handleMetasymbolsInPost on middle and End text.
+    
+    SO: For every metasymbol reg exp in the metasybol reg exp's array:
+        test for a match in the post text.
+        (note: nested tags would break this but w/e)
+        if a match is found, exec the regExp and store the result in the Result array
+        set var toReturn to result[1] + beginning tag for symbol + result[2] + end tag for symbol + handleMetasymbolsInPost(new post from name and result[3]);
+        return toReturn;
+    
+
+NOTE: Wrap each post in <post></post>. 
+Example text: <Bob><post>"Hello there, Jim!" *Bob smiles at Jim.*</post><post>"You doing well together?"</post></Bob><Jim>*Jim blushes.* "Well howdy do, Bob!"</Jim>

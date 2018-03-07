@@ -19,7 +19,7 @@ function telegramDecipher(allText) {
 	setRightName(names[1]);
 	generateUsernameHeaders();
     
-    var nameRegExp = new RegExp("<p>?(" + leftName + "|" + rightName+  "), \\[\\d{2}.\\d{2}.\\d{2} \\d{2}:\\d{2}\\]");
+    var nameRegExp = new RegExp("<p>(" + leftName + "|" + rightName+  "), \\[\\d{2}.\\d{2}.\\d{2} \\d{2}:\\d{2}\\]");
 
     //split the entire string based on the header styling
     //starts at 2 because 0 is an empty thing for some reason
@@ -38,41 +38,21 @@ function telegramDecipher(allText) {
 function parseTelegramNames(allText) {
     var leftName = "";
     var rightName = "";
-
-    //guess left name, then see if we're right.
-    var i = 3;
-    for (; i < allText.length - 1; i++) {
-        leftName = allText.substring(i, allText.indexOf(","));
-        if (parseHTMLElements(allText, i - 3) == "p"
-            && allText.charAt(i + leftName.length + 2) == "["		//check if there's a [ after their name, plus space for , and the space
-            && allText.charAt(i + leftName.length + 5) == "."
-            && allText.charAt(i + leftName.length + 8) == "."
-            && allText.charAt(i + leftName.length + 14) == ":"
-            && allText.charAt(i + leftName.length + 17) == "]"
-            && parseHTMLElements(allText, i + leftName.length + 18) == "br") {
-            i = i + 24; //skip past this name
-            break;
-        }
+    
+    //used to grab the name from the header. Easiest to use 
+    // a reg expression cause Telegram names have like 
+    // no unusable characters, so this is the only 
+    // way to foolproof against that.
+    var regExp = new RegExp("(.*), \\[\\d{2}.\\d{2}.\\d{2} \\d{2}:\\d{2}\\]")
+    var splits = allText.split("<p>");
+    
+    //start at pos 1 because pos 0 is empty for some reason
+    leftName = rightName = regExp.exec(splits[1])[1];
+    
+    for (var i = 2; rightName == leftName && i < splits.length; i++){
+        regExp.lastIndex = 0;
+        rightName = regExp.exec(splits[i])[1];
     }
-
-    //guess right name, then see if it's good. Starts from where last loop left off
-    for (; i < allText.length - 1; i++) {
-        rightName = (allText.substring(i, allText.indexOf(",", i)));
-        if (rightName == leftName) {
-            i = i + 24;
-        }
-        if (parseHTMLElements(allText, i - 3) == "p"
-            && rightName != leftName                                //make sure we didn't just grab the same name
-            && allText.charAt(i + rightName.length == ",")
-            && allText.charAt(i + rightName.length + 2) == "["		//same as before, but with right name
-            && allText.charAt(i + rightName.length + 5) == "."
-            && allText.charAt(i + rightName.length + 8) == "."
-            && allText.charAt(i + rightName.length + 14) == ":"
-            && allText.charAt(i + rightName.length + 17) == "]"
-            && allText.charAt(i + rightName.length + 17) == "]"
-            && parseHTMLElements(allText, i + rightName.length + 18) == "br") {
-            break;
-        }
-    }
+    
     return [leftName, rightName];
 }

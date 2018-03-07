@@ -19,12 +19,14 @@ function telegramDecipher(allText) {
 	setRightName(names[1]);
 	generateUsernameHeaders();
     
-    var nameRegExp = new RegExp("(?:" + leftName + "|" + rightName+  "), \\[\\d{2}.\\d{2}.\\d{2} \\d{2}:\\d{2}\\]");
+    var nameRegExp = new RegExp("<p>?(" + leftName + "|" + rightName+  "), \\[\\d{2}.\\d{2}.\\d{2} \\d{2}:\\d{2}\\]");
 
-    
+    //split the entire string based on the header styling
+    //starts at 2 because 0 is an empty thing for some reason
+    // and all the odd numbers are the the rp'er name
     var splits = allText.split(nameRegExp);
-    for (var i = 0; i < splits.length; i++){
-        console.log(splits[i]);
+    for (var i = 2; i < splits.length; i+=2){
+        createParagraphElement(splits[i], (splits[i-1] == leftName));
     }
 
 } //end of telegramDecipher

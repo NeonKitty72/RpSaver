@@ -15,7 +15,8 @@ function telegramDecipher(allText) {
     var names = parseTelegramNames(allText);
     var leftName = names[0], rightName = names[1];		//the names of the two rpers
     if (isDebug) console.log("Left Name: " + leftName + " |Right Name: " + rightName);
-	setLeftName(names[0]);
+	
+    setLeftName(names[0]);
 	setRightName(names[1]);
 	generateUsernameHeaders();
     
@@ -33,16 +34,14 @@ function telegramDecipher(allText) {
 
 
 //**************************
-//Guesses the left and right person from the text given: Basically looks for the first two messages and guesses from there
+//Guesses the left and right person from the text given
 //returns left and right name as a 2-slot array: left, then right.
 function parseTelegramNames(allText) {
     var leftName = "";
     var rightName = "";
     
     //used to grab the name from the header. Easiest to use 
-    // a reg expression cause Telegram names have like 
-    // no unusable characters, so this is the only 
-    // way to foolproof against that.
+    // a reg expression to handle telegram allowing any charas.
     var regExp = new RegExp("(.*), \\[\\d{2}.\\d{2}.\\d{2} \\d{2}:\\d{2}\\]")
     var splits = allText.split("<p>");
     

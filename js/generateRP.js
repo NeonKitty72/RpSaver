@@ -20,6 +20,7 @@ function makeItNoice() {
     if (isDebug) {loadDebugText();}
     
     allText = CKEDITOR.instances.rp.getData();		//Text that is in the user input textArea
+    if (isDebug) {console.log(allText);}
     document.getElementById("rpOutput").innerHTML = "";	//reset current generated rp
 
     //get what chat client the user chose

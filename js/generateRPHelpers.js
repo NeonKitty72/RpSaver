@@ -1,31 +1,121 @@
 /****************************************************************
 *   Suzanne Kersten
-*	12/18/2017
+*	3/23/2018
 *	Helper functions for generating RP's, such as santizing
 *   html input and creating properly formatted html p tags.
 *
-*   TODO: make way for user to choose to skip over certain
-*   html tags, like em and bold.
 *****************************************************************/
+
+var allText;
+var leftName = "", rightName = "";
+
+//takes in a function that MUST return all the text in 
+// an array, where elem 0 is a name, elem 1 is text, 
+// elem 2 is name, elem 3 is text, etc, etc
+function parseText(doParseText, regExp){
+    var messages = doParseText(regExp);
+    
+    for (var i = 2; i < messages.length; i+=2){
+        createParagraphElement(messages[i], messages[i-1] == leftName);
+    }
+}
+
+function parseNames(doParseNames, regExp){
+    var names = doParseNames(regExp);
+    
+    leftName = names[0];
+    rightName = names[1];
+    generateUsernameHeaders();
+}
+
+function discordParseText(){
+    //<p><strong>username</strong>-(Last <dayOfWeek> at XX:XX PM OR XX/XX/XXXX)
+    var genericDateHeader = "<p><strong>(\\w*)<\\/strong>-" + "(?:(?:Yesterday|Today|Last (?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)) at \\d{1,2}:\\d{2} (?:A|P)M|\\d{2}/\\d{2}/\\d{4})<\\/p>";
+    var headerRegExp = new RegExp(genericDateHeader, "g");
+    
+    parseNames(function(regExp){
+        var result = allText.match(regExp);
+
+        //get the left name
+        leftName = regExp.exec(result[0])[1];		//get first name from header text array
+        var rightName = leftName;
+
+        //hunt through the rest of the array for the next name that isn't the same as the previously found name.
+        var arrayPos = 0;
+        do {
+            arrayPos++;
+            regExp.lastIndex = 0;
+            rightName = regExp.exec(result[arrayPos])[1];	//get name from header text array
+        } while (rightName === leftName);
+        
+        return [leftName, rightName];
+    }, headerRegExp);
+    
+    parseText(function(regExp){
+        console.log(regExp);
+        var splits = allText.split(regExp);
+        var fullsplits = [""];
+        for (var i = 2; i < splits.length; i += 2) {
+            //Discord gives posts in "sets" by each user
+            // so we need to split each "set" into each individual post a user made
+            var secondSplits = splits[i].split("</p><p>");
+            for (var j = 0; j < secondSplits.length; j++) {
+                fullsplits.push(splits[i - 1]);
+                fullsplits.push(secondSplits[j]);
+            }
+        }
+        
+        return fullsplits;
+    }, headerRegExp);
+    
+    
+}
+
+function telegramParseText(){
+    var headerREString = ", \\[\\d{2}.\\d{2}.\\d{2} \\d{2}:\\d{2}\\]";
+    var headerRegExp = new RegExp("(.*)" + headerREString);
+    
+    parseNames(function(regExp){
+        var splits = allText.split("<p>");
+        //start at pos 1 because pos 0 is empty for some reason
+        leftName = rightName = regExp.exec(splits[1])[1];
+
+        for (var i = 2; rightName == leftName && i < splits.length; i++){
+            regExp.lastIndex = 0;
+            rightName = regExp.exec(splits[i])[1];
+        } 
+        
+        return [leftName, rightName];
+    }, headerRegExp);
+    
+    headerRegExp = new RegExp("<p>(" + leftName + "|" + rightName+  ")" + headerREString);    
+    parseText(function(regExp){
+        console.log(allText.split(regExp));
+        return allText.split(regExp);
+    }, headerRegExp);
+}
+
 //basically, a menu that chooses what style to expect the input as
 // based on the user's radio button choice.
 function makeItNoice() {
     
-	var testString = "<p><strong>QueenSuzy</strong>-02/24/2018</p><p>LICK UR TV</p><p><strong>VixieMoondew</strong>-02/24/2018</p><p>w-wha</p><p><strong>QueenSuzy</strong>-02/24/2018</p><p>I dunno</p><p>I had an urge and passed it onto you</p><p><strong>VixieMoondew</strong>-02/24/2018</p><p>I get u</p><p><strong>QueenSuzy</strong>-02/24/2018</p><p>yeah</p><p>I&#39;m just feeling a lil off tonight</p><p><strong>VixieMoondew</strong>-02/24/2018</p><p>I get u</p><p>I got Weird Sleep last night so I get it</p><p><strong>QueenSuzy</strong>-02/24/2018</p><p>yeah same here</p><p>It was a nice rest but like... I need MORE</p>"
-	CKEDITOR.instances.rp.setData(testString);
+	var testString = "<p><strong>QueenSuzy</strong>-02/24/2018</p><p>LICK UR TV</p><p><strong>VixieMoondew</strong>-02/24/2018</p><p>w-wha</p><p><strong>QueenSuzy</strong>-02/24/2018</p><p>I dunno</p><p>I had an urge and passed it onto you</p><p><strong>VixieMoondew</strong>-02/24/2018</p><p>I get u</p><p><strong>QueenSuzy</strong>-02/24/2018</p><p>yeah</p><p>I&#39;m just feeling a lil off tonight</p><p><strong>VixieMoondew</strong>-02/24/2018</p><p>I get u</p><p>I got Weird Sleep last night so I get it</p><p><strong>QueenSuzy</strong>-02/24/2018</p><p>yeah same here</p><p>It was a nice rest but like... I need MORE</p>";
+	//CKEDITOR.instances.rp.setData(testString);
 
-    var allText = CKEDITOR.instances.rp.getData();		//Text that is in the user input textArea
+    allText = CKEDITOR.instances.rp.getData();		//Text that is in the user input textArea
 
 
-	if (isDebug) console.log(allText);
+	//if (isDebug) console.log(allText);
     document.getElementById("rpOutput").innerHTML = "";	//reset current generated rp
 
     //get what chat client the user chose
     var messenger = document.getElementsByName("messengerRadioList");
     if (messenger[0].checked) {			//user chose telegram
-        telegramDecipher(allText);
+        telegramParseText();
+        //telegramDecipher(allText);
     } else if (messenger[1].checked) {  //user chose discord
-        discordDecipher(allText);
+        discordParseText();
+        //discordDecipher(allText);
     } else if (messenger[2].checked) {	//user chose other
 		otherDecipher(allText);
 	}
@@ -55,18 +145,6 @@ function generateUsernameHeaders(){
 	document.getElementById("rpOutput").appendChild(div);
 }
 
-//****************** setup leftName and rightName ******************
-//keeps track of the leftName and rightName so that it can be used
-// in setting up paragraph elements.
-var leftName = "";
-var rightName = "";
-function setLeftName(username){
-	leftName = htmlDecode(username);
-}
-function setRightName(username){
-	rightName = htmlDecode(username);
-}
-
 //****************** Other ******************
 //basically just do basic formatting based on newlines and nothing else.
 // most basic format.
@@ -88,8 +166,9 @@ function otherDecipher(allText) {
         }
 
         //pick up text until we hit crlf
-        if (allText.charAt(i) != "\r" && allText.charAt(i) != "\n")
-            toOutput += allText.charAt(i)
+        if (allText.charAt(i) != "\r" && allText.charAt(i) != "\n"){
+            toOutput += allText.charAt(i);
+        }
     }
     //one last output to grab the last response
     createParagraphElement(toOutput, left);
@@ -108,7 +187,7 @@ function parseHTMLElements(text, position) {
     else if (text.substring(position, position + 9) == "</strong>") { return "/strong"; }
     else if (text.substring(position, position + 4) == "<em>") { return "em"; }
     else if (text.substring(position, position + 5) == "</em>") { return "/em"; }
-    else return "NONE";
+    else {return "NONE";}
 }
 
 //****************** Santize HTML content ******************
